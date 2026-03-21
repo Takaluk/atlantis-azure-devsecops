@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: news-service
+  datasource:
+    url: jdbc:postgresql://${NEWS_DB_HOST:localhost}:${NEWS_DB_PORT:5433}/${NEWS_DB_NAME:newsdb}
+    username: ${NEWS_DB_USERNAME:stocklens}
+    password: ${NEWS_DB_PASSWORD:stocklens}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: ${NEWS_SERVICE_PORT:8082}
+
+logging:
+  level:
+    org.hibernate.SQL: INFO
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings

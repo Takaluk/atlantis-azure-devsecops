@@ -1,0 +1,186 @@
+services:
+  stock-postgres:
+    image: postgres:16-alpine
+    container_name: stocklens-stock-postgres
+    environment:
+      POSTGRES_USER: ${STOCK_DB_USERNAME}
+      POSTGRES_PASSWORD: ${STOCK_DB_PASSWORD}
+      POSTGRES_DB: ${STOCK_DB_NAME}
+    ports:
+      - "${STOCK_DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - stocklens_stockdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${STOCK_DB_USERNAME} -d ${STOCK_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - stocklens-local
+
+  news-postgres:
+    image: postgres:16-alpine
+    container_name: stocklens-news-postgres
+    environment:
+      POSTGRES_USER: ${NEWS_DB_USERNAME}
+      POSTGRES_PASSWORD: ${NEWS_DB_PASSWORD}
+      POSTGRES_DB: ${NEWS_DB_NAME}
+    ports:
+      - "${NEWS_DB_HOST_PORT:-5433}:5432"
+    volumes:
+      - stocklens_newsdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NEWS_DB_USERNAME} -d ${NEWS_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - stocklens-local
+
+  auth-postgres:
+    image: postgres:16-alpine
+    container_name: stocklens-auth-postgres
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USERNAME}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "${AUTH_DB_HOST_PORT:-5434}:5432"
+    volumes:
+      - stocklens_authdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USERNAME} -d ${AUTH_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - stocklens-local
+
+  auth-redis:
+    image: redis:7.4.7-alpine
+    container_name: stocklens-auth-redis
+    ports:
+      - "${AUTH_REDIS_HOST_PORT:-6379}:6379"
+    volumes:
+      - stocklens_authredis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - stocklens-local
+
+  news-service:
+    build:
+      context: ..
+      dockerfile: docker/news-service.Dockerfile
+    container_name: stocklens-news-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${NEWS_SERVICE_PORT:-8082}:8082"
+    depends_on:
+      news-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8082/actuator/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - stocklens-local
+
+  stock-service:
+    build:
+      context: ..
+      dockerfile: docker/stock-service.Dockerfile
+    container_name: stocklens-stock-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${STOCK_SERVICE_PORT:-8081}:8081"
+    depends_on:
+      stock-postgres:
+        condition: service_healthy
+      news-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8081/actuator/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - stocklens-local
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: docker/auth-service.Dockerfile
+    container_name: stocklens-auth-service
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${AUTH_SERVICE_PORT:-8083}:8083"
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      auth-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8083/actuator/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - stocklens-local
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
+    container_name: stocklens-frontend
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    depends_on:
+      stock-service:
+        condition: service_healthy
+      news-service:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/actuator/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - stocklens-local
+
+volumes:
+  stocklens_stockdata:
+  stocklens_newsdata:
+  stocklens_authdata:
+  stocklens_authredis:
+
+networks:
+  stocklens-local:
+    name: stocklens-local

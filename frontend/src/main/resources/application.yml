@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: frontend
+
+server:
+  port: ${FRONTEND_PORT:8080}
+
+app:
+  stock-service-url: ${STOCK_SERVICE_URL:http://localhost:8081}
+  news-service-url: ${NEWS_SERVICE_URL:http://localhost:8082}
+  auth-service-url: ${AUTH_SERVICE_URL:http://localhost:8083}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,mappings

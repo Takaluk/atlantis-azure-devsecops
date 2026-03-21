@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Stock Lens - Search</title>
+  <style>
+
+    :root{
+      --bg:#0b0f14;
+      --card:#121826;
+      --card2:#0f1522;
+      --text:#e8eefc;
+      --muted:#9aa7bd;
+      --line:#24314a;
+      --chip:#1a2336;
+      --chip2:#172033;
+      --good:#2dd4bf;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", Segoe UI, Roboto, Helvetica, Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    a{color:inherit; text-decoration:none}
+    .app{
+      max-width:480px;
+      margin:0 auto;
+      padding: calc(12px + env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom) + 70px);
+    }
+
+    /* Topbar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 10px 0 12px;
+      background: linear-gradient(to bottom, rgba(11,15,20,0.98), rgba(11,15,20,0.86), rgba(11,15,20,0));
+      backdrop-filter: blur(6px);
+    }
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .brand{display:flex; flex-direction:column; gap:2px;}
+    .title{font-size:16px; font-weight:850; letter-spacing:-0.2px;}
+    .sub{font-size:12px; color:var(--muted);}
+    .badge{
+      font-size:12px;
+      color:var(--muted);
+      padding:8px 10px;
+      border:1px solid var(--line);
+      background: rgba(18,24,38,0.6);
+      border-radius:999px;
+      white-space:nowrap;
+    }
+
+    /* Cards */
+    .card{
+      background: linear-gradient(180deg, rgba(18,24,38,0.96), rgba(18,24,38,0.86));
+      border: 1px solid rgba(36,49,74,0.7);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+    .card + .card{ margin-top: 10px; }
+    .sectionTitle{
+      font-size:13px;
+      font-weight:850;
+      margin: 2px 2px 10px;
+      letter-spacing:-0.2px;
+    }
+
+    /* Search */
+    .searchWrap{display:flex; flex-direction:column; gap:10px;}
+    .searchBox{
+      display:flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(36,49,74,0.75);
+      background: rgba(15,21,34,0.55);
+    }
+    .searchIcon{width:18px; height:18px; flex:0 0 auto; opacity:0.9;}
+    .searchInput{
+      width:100%;
+      border:0;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:14px;
+    }
+    .searchInput::placeholder{ color: rgba(154,167,189,0.8); }
+    .clearBtn{
+      border:1px solid rgba(36,49,74,0.8);
+      background: rgba(18,24,38,0.55);
+      color: var(--muted);
+      border-radius: 12px;
+      padding: 7px 9px;
+      font-size: 12px;
+      cursor:pointer;
+    }
+    .clearBtn:active{ transform: scale(0.98); }
+
+    /* Chips */
+    .chipRow{
+      display:flex;
+      gap:8px;
+      overflow:auto;
+      padding: 2px 2px 0;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+    .chipRow::-webkit-scrollbar{display:none}
+    .chip{
+      flex:0 0 auto;
+      background: var(--chip);
+      border: 1px solid rgba(36,49,74,0.7);
+      color: var(--text);
+      font-size:12px;
+      padding: 9px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      white-space:nowrap;
+      scroll-snap-align: start;
+      user-select:none;
+      transition: transform .06s ease;
+    }
+    .chip:active{ transform: scale(0.98); }
+    .chip.secondary{ background: var(--chip2); color: var(--muted); }
+    .chip.selected{
+      border-color: rgba(45,212,191,0.85);
+      box-shadow: 0 0 0 3px rgba(45,212,191,0.14);
+    }
+
+    /* List */
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px;
+      border-radius: 16px;
+      border:1px solid rgba(36,49,74,0.65);
+      background: rgba(15,21,34,0.55);
+      cursor:pointer;
+      transition: transform .06s ease;
+    }
+    .item:active{ transform: scale(0.99); }
+    .left{display:flex; flex-direction:column; gap:3px; min-width:0;}
+    .symRow{display:flex; align-items:center; gap:8px; min-width:0;}
+    .sym{font-size:13px; font-weight:900; letter-spacing:-0.1px;}
+    .name{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 220px;
+    }
+    .tag{
+      font-size:10px;
+      padding: 5px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(36,49,74,0.7);
+      color: var(--muted);
+      background: rgba(18,24,38,0.55);
+      flex:0 0 auto;
+    }
+    .right{display:flex; align-items:center; gap:12px; flex: 0 0 auto;}
+    .px{display:flex; flex-direction:column; align-items:flex-end; gap:3px;}
+    .price{font-size:13px; font-weight:850; letter-spacing:-0.1px;}
+    .chg{font-size:12px; font-weight:800;}
+    .chg.good{ color: var(--good); }
+    .chg.bad{ color: var(--bad); }
+    .chg.neutral{ color: var(--warn); }
+
+    .spark{width: 72px; height: 26px; opacity: 0.95; flex: 0 0 auto;}
+    .spark path{fill:none; stroke: rgba(232,238,252,0.85); stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+    .spark .fill{fill: rgba(154,167,189,0.10); stroke: none;}
+
+    .muted{ color: var(--muted); }
+
+    .empty{
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px dashed rgba(36,49,74,0.75);
+      background: rgba(18,24,38,0.35);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* Bottom nav */
+    .bottomNav{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      width: min(480px, calc(100vw - 24px));
+      background: rgba(18,24,38,0.78);
+      border: 1px solid rgba(36,49,74,0.7);
+      border-radius: 18px;
+      backdrop-filter: blur(8px);
+      display:flex;
+      justify-content:space-between;
+      padding: 10px 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .navBtn{
+      flex:1 1 0;
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      padding: 9px 10px;
+      border-radius: 14px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .navBtn.active{
+      color: var(--text);
+      border: 1px solid rgba(45,212,191,0.55);
+      background: rgba(45,212,191,0.10);
+    }
+
+    /* Articles */
+    .articleItem{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px;
+      border-radius: 14px;
+      border:1px solid rgba(36,49,74,0.65);
+      background: rgba(15,21,34,0.55);
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: rgba(154,167,189,0.7);
+      margin-top:6px; flex:0 0 auto;
+    }
+    .aText{display:flex; flex-direction:column; gap:2px;}
+    .aTitle{font-size:12px; font-weight:800; letter-spacing:-0.1px}
+    .aMeta{font-size:11px; color:var(--muted)}
+    .aDesc{font-size:12px; color:var(--text); line-height:1.5; margin-top:4px}
+
+    /* Small button */
+    .btn{
+      border:1px solid rgba(36,49,74,0.8);
+      background: rgba(15,21,34,0.6);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 850;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:active{ transform: scale(0.98); }
+    .btn.primary{
+      border-color: rgba(45,212,191,0.65);
+      background: rgba(45,212,191,0.12);
+    }
+    .btn.ghost{
+      color: var(--muted);
+      background: rgba(18,24,38,0.35);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="row">
+        <div class="brand">
+          <div class="title">종목 검색</div>
+          <div class="sub">각 장의 종목을 검색합니다.</div>
+        </div>
+        <div class="badge" id="marketBadge">US · -</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card">
+      <div class="sectionTitle">종목 검색</div>
+
+      <div class="searchWrap">
+        <div class="searchBox">
+          <svg class="searchIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="rgba(154,167,189,0.9)" d="M10 18a8 8 0 1 1 5.293-14.01A8 8 0 0 1 10 18zm0-2a6 6 0 1 0-4.243-1.757A6 6 0 0 0 10 16zm8.707 5.293-4.2-4.2 1.414-1.414 4.2 4.2a1 1 0 0 1-1.414 1.414z"/>
+          </svg>
+          <input id="q" class="searchInput" placeholder="티커/회사명 검색 (예: AAPL, 삼성전자)" autocomplete="off" />
+          <button id="clear" class="clearBtn" type="button">X</button>
+        </div>
+
+        <div class="chipRow" id="marketChips" aria-label="마켓 필터">
+          <button class="chip selected" type="button" data-market="ALL">전체</button>
+          <button class="chip" type="button" data-market="US">US</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <div class="sectionTitle" style="margin:0">검색 결과</div>
+        <div class="badge" id="countBadge">0개</div>
+      </div>
+      <div class="list" id="resultList"></div>
+      <div class="empty" id="emptyState" style="display:none">
+        검색 결과가 없습니다. <br/>
+        티커(예: AAPL) 또는 회사명으로 다시 검색해보세요.
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="bottomNav" role="navigation" aria-label="하단 메뉴">
+    <div class="navBtn" id="navHome">🏠 홈</div>
+    <div class="navBtn active" id="navSearch">🔎 검색</div>
+    <div class="navBtn" id="navWatch">⭐ 관심</div>
+    <div class="navBtn" id="navLogin">🔑 로그인</div>
+  </div>
+
+  <script>
+    // ====== Helpers ======
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+    function pctClass(v){
+      if (v >= 0.25) return "good";
+      if (v <= -0.25) return "bad";
+      return "neutral";
+    }
+    function fmtChg(v){
+      const sign = v > 0 ? "+" : (v < 0 ? "" : "");
+      return `${sign}${v.toFixed(1)}%`;
+    }
+    function formatPrice(v, market){
+      const currency = market === "US" ? "$" : "";
+      return `${currency} ${Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+    }
+    function calcChg(points){
+      if (!points || points.length < 2) return null;
+      const last = points[points.length - 1];
+      const prev = points[points.length - 2];
+      if (!prev) return null;
+      return ((last - prev) / prev) * 100;
+    }
+    function sparkPath(points, w=72, h=26, pad=2){
+      if (!points || points.length < 2) return { d: "", fillD: "" };
+      const min = Math.min(...points);
+      const max = Math.max(...points);
+      const span = Math.max(1e-6, max - min);
+      const step = (w - pad*2) / (points.length - 1);
+
+      const xy = points.map((p,i) => {
+        const x = pad + i*step;
+        const y = pad + (1 - (p - min)/span) * (h - pad*2);
+        return [x,y];
+      });
+
+      const d = xy.map(([x,y],i) => (i===0 ? `M ${x.toFixed(2)} ${y.toFixed(2)}` : `L ${x.toFixed(2)} ${y.toFixed(2)}`)).join(" ");
+      const fillD = `${d} L ${(w-pad).toFixed(2)} ${(h-pad).toFixed(2)} L ${pad.toFixed(2)} ${(h-pad).toFixed(2)} Z`;
+      return { d, fillD };
+    }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[m]));
+    }
+    function openStock(sym){
+      location.href = `/stock?t=${encodeURIComponent(sym)}`;
+    }
+    function renderItem(t){
+      const el = document.createElement("div");
+      el.className = "item";
+      el.setAttribute("role","button");
+      el.tabIndex = 0;
+
+      const series = t.spark ?? [];
+      const { d, fillD } = sparkPath(series);
+      const chg = calcChg(series);
+      const chgCls = chg === null ? "neutral" : pctClass(chg);
+      const priceText = series.length ? formatPrice(series[series.length - 1], t.market) : "-";
+      const chgText = chg === null ? "-" : fmtChg(chg);
+
+      el.innerHTML = `
+        <div class="left">
+          <div class="symRow">
+            <div class="sym">${escapeHtml(t.sym)}</div>
+            <div class="tag">${escapeHtml(t.tag)} · ${escapeHtml(t.market)}</div>
+          </div>
+          <div class="name">${escapeHtml(t.name)}</div>
+        </div>
+        <div class="right">
+          <svg class="spark" viewBox="0 0 72 26" aria-hidden="true">
+            <path class="fill" d="${fillD}"></path>
+            <path d="${d}"></path>
+          </svg>
+          <div class="px">
+            <div class="price">${escapeHtml(priceText)}</div>
+            <div class="chg ${chgCls}">${escapeHtml(chgText)}</div>
+          </div>
+        </div>
+      `;
+      el.addEventListener("click", () => openStock(t.sym));
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") openStock(t.sym);
+      });
+      return el;
+    }
+
+    // ====== Login ======
+    function getToken(){
+      return localStorage.getItem("access_token");
+    }
+    function setToken(token){
+      if (token) {
+        localStorage.setItem("access_token", token);
+      } else {
+        localStorage.removeItem("access_token");
+      }
+    }
+    function isLoggedIn(){
+      return !!getToken();
+    }
+    function authHeaders(){
+      const token = getToken();
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+    async function loginFlow(){
+      const email = prompt("이메일", "demo@stocklens.local");
+      if (!email) return;
+      const password = prompt("비밀번호", "demo1234");
+      if (!password) return;
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      if (!res.ok) throw new Error("로그인 실패: " + res.status);
+      const data = await res.json();
+      setToken(data.accessToken);
+      alert("로그인");
+    }
+    async function logoutFlow(){
+      const token = getToken();
+      if (!token) return;
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: authHeaders()
+      });
+      if (!res.ok) throw new Error("로그아웃 실패: " + res.status);
+      setToken(null);
+      alert("로그아웃");
+    }
+    function updateLoginLabel(){
+      const el = $("#navLogin");
+      if (!el) return;
+      el.textContent = isLoggedIn() ? "🚪 로그아웃" : "🔑 로그인";
+    }
+
+    // ====== Bottom Nav ======
+    function bindNav(active){
+      const go = (p) => location.href = p;
+
+      $("#navHome")?.addEventListener("click", () => go("/home"));
+      $("#navSearch")?.addEventListener("click", () => go("/search"));
+      $("#navWatch")?.addEventListener("click", () => go("/watch"));
+      $("#navLogin")?.addEventListener("click", async () => {
+        try {
+          if (isLoggedIn()){
+            await logoutFlow();
+          } else {
+            await loginFlow();
+          }
+        } catch (err) {
+          alert(err?.message ?? "요청 실패");
+        }
+        updateLoginLabel();
+      });
+
+      // active state
+      const map = {home:"navHome", search:"navSearch", watch:"navWatch", login:"navLogin"};
+      Object.values(map).forEach(id => $("#"+id)?.classList.remove("active"));
+      const actId = map[active];
+      if (actId) $("#"+actId)?.classList.add("active");
+
+      updateLoginLabel();
+    }
+
+    function setTodayBadge(){
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth()+1).padStart(2,"0");
+      const dd = String(today.getDate()).padStart(2,"0");
+      $("#marketBadge") && ($("#marketBadge").textContent = `US · ${yyyy}-${mm}-${dd}`);
+    }
+
+
+    const resultList = document.getElementById("resultList");
+    const countBadge = document.getElementById("countBadge");
+    const emptyState = document.getElementById("emptyState");
+    const q = document.getElementById("q");
+    let selectedMarket = "ALL";
+
+    async function loadResults(){
+      const params = new URLSearchParams();
+      if (selectedMarket !== "ALL") params.set("market", selectedMarket);
+      if (q.value.trim()) params.set("q", q.value.trim());
+      params.set("limit", "20");
+
+      const res = await fetch("/api/stocks?" + params.toString());
+      if (!res.ok) throw new Error("GET /api/stocks failed: " + res.status);
+      const items = await res.json();
+
+      resultList.innerHTML = "";
+      const symbols = items.map(s => s.symbol);
+      const sparkMap = {};
+      if (symbols.length){
+        const sparkRes = await fetch("/api/stocks/sparks?symbols=" + encodeURIComponent(symbols.join(",")) + "&limit=20");
+        if (sparkRes.ok){
+          const sparkItems = await sparkRes.json();
+          sparkItems.forEach(x => {
+            sparkMap[x.symbol] = (x.prices || []).map(p => Number(p.close));
+          });
+        }
+      }
+      items.forEach(s => {
+        const el = renderItem({
+          sym: s.symbol,
+          name: s.name,
+          market: s.market,
+          tag: s.tag,
+          spark: sparkMap[s.symbol] || []
+        });
+        resultList.appendChild(el);
+      });
+
+      countBadge.textContent = `${items.length}개`;
+      emptyState.style.display = items.length === 0 ? "block" : "none";
+    }
+
+    function bindChips(){
+      const chips = Array.from(document.querySelectorAll("#marketChips .chip"));
+      chips.forEach(ch => {
+        ch.addEventListener("click", () => {
+          chips.forEach(x => x.classList.remove("selected"));
+          ch.classList.add("selected");
+          selectedMarket = ch.dataset.market;
+          loadResults().catch(console.error);
+        });
+      });
+    }
+
+    // Init
+    setTodayBadge();
+    bindNav("search");
+    bindChips();
+    loadResults().catch(console.error);
+
+    let timer;
+    q.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => loadResults().catch(console.error), 250);
+    });
+  </script>
+</body>
+</html>
