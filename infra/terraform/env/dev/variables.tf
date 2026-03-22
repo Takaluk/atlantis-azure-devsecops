@@ -1,7 +1,7 @@
 variable "key_vault_name" {
   description = "Key Vault 이름"
   type        = string
-  default     = "kv-stocklens-dev-yslee0419"
+  default     = "kv-stocklens-dev-0419"
 }
 
 variable "key_vault_sku_name" {
