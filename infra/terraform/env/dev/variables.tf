@@ -61,7 +61,7 @@ variable "redis_name" {
 variable "redis_sku_name" {
   description = "Redis SKU"
   type        = string
-  default     = "Basic"
+  default     = "Standard"
 }
 
 variable "redis_family" {
