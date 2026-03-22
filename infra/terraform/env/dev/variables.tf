@@ -13,11 +13,13 @@ variable "postgres_admin_username" {
 variable "key_vault_name" {
   description = "Key Vault 이름"
   type        = string
+  default     = "kv-stocklens-dev-0419"
 }
 
 variable "key_vault_resource_group_name" {
   description = "Key Vault 리소스 그룹 이름"
   type        = string
+  default     = "rg-stocklens-msa"
 }
 
 variable "postgres_admin_password_secret_name" {
