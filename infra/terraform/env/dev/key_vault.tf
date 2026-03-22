@@ -1,30 +1,9 @@
-resource "random_password" "postgres_admin" {
-  length           = 24
-  special          = true
-  override_special = "!@#$%&*()-_=+[]{}<>:?"
+data "azurerm_key_vault" "shared" {
+  name                = var.key_vault_name
+  resource_group_name = var.key_vault_resource_group_name
 }
 
-resource "azurerm_key_vault" "shared" {
-  # checkov:skip=CKV_AZURE_109: dev에서는 public access를 임시 사용
-  # checkov:skip=CKV_AZURE_189: dev에서는 public network access를 임시 사용
-  # checkov:skip=CKV2_AZURE_32: dev에서는 private endpoint 미구성
-
-  name                          = var.key_vault_name
-  location                      = azurerm_resource_group.rg.location
-  resource_group_name           = azurerm_resource_group.rg.name
-  tenant_id                     = data.azurerm_client_config.current.tenant_id
-  sku_name                      = var.key_vault_sku_name
-  soft_delete_retention_days    = 7
-  purge_protection_enabled      = true
-  public_network_access_enabled = true
+data "azurerm_key_vault_secret" "postgres_admin_password" {
+  name         = var.postgres_admin_password_secret_name
+  key_vault_id = data.azurerm_key_vault.shared.id
 }
-
-resource "azurerm_key_vault_secret" "postgres_admin_password" {
-  name            = var.postgres_admin_password_secret_name
-  value           = random_password.postgres_admin.result
-  key_vault_id    = azurerm_key_vault.shared.id
-  content_type    = "password"
-  expiration_date = timeadd(timestamp(), "8760h")
-}
-
-data "azurerm_client_config" "current" {}
