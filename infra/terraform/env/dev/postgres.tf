@@ -17,7 +17,7 @@ resource "azurerm_postgresql_flexible_server" "postgres" {
   version                = var.postgres_version
   delegated_subnet_id    = null
   administrator_login    = var.postgres_admin_username
-  administrator_password = var.postgres_admin_password
+  administrator_password = data.azurerm_key_vault_secret.postgres_admin_password.value
   zone                   = "1"
   storage_mb             = var.postgres_storage_mb
   sku_name               = var.postgres_sku_name
