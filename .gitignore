@@ -41,6 +41,7 @@ out/
 *.tfstate
 *.tfstate.*
 .terraform/
+.terraform.bak/
 crash.log
 override.tf
 override.tf.json
