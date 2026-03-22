@@ -23,6 +23,14 @@ atlantis-azure-devsecops/
 └── frontend/                    # 프론트엔드
 ```
 
+## 파이프라인 흐름
+
+`develop PR` → `Checkov` → `Atlantis` → `main merge` → `Prowler`
+
+- **Checkov**: Terraform 보안 검증
+- **Atlantis**: Terraform plan/apply 자동화
+- **Prowler**: Azure 보안 점검
+
 ## Run Locally
 
 ```bash
