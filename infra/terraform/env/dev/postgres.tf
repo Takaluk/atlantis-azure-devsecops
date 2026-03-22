@@ -7,10 +7,10 @@ locals {
 }
 
 resource "azurerm_postgresql_flexible_server" "postgres" {
-  # checkov:skip=CKV2_AZURE_28: dev에서는 public access를 임시 사용
-  # checkov:skip=CKV2_AZURE_57: dev에서는 private endpoint 미구성
-  # checkov:skip=CKV_AZURE_136: dev에서는 geo backup 미적용
-  # checkov:skip=CKV_AZURE_212: dev에서는 CMK 미적용
+  # checkov:skip=CKV2_AZURE_28:  public access를 임시 사용
+  # checkov:skip=CKV2_AZURE_57:  private endpoint 미구성
+  # checkov:skip=CKV_AZURE_136:  geo backup 미적용
+  # checkov:skip=CKV_AZURE_212:  CMK 미적용
 
   name                   = var.postgres_server_name
   resource_group_name    = azurerm_resource_group.rg.name
