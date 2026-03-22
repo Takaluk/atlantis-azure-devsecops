@@ -6,6 +6,8 @@ resource "random_password" "postgres_admin" {
 
 resource "azurerm_key_vault" "shared" {
   # checkov:skip=CKV_AZURE_109: dev에서는 public access를 임시 사용
+  # checkov:skip=CKV_AZURE_189: dev에서는 public network access를 임시 사용
+  # checkov:skip=CKV2_AZURE_32: dev에서는 private endpoint 미구성
 
   name                          = var.key_vault_name
   location                      = azurerm_resource_group.rg.location
@@ -18,9 +20,11 @@ resource "azurerm_key_vault" "shared" {
 }
 
 resource "azurerm_key_vault_secret" "postgres_admin_password" {
-  name         = var.postgres_admin_password_secret_name
-  value        = random_password.postgres_admin.result
-  key_vault_id = azurerm_key_vault.shared.id
+  name            = var.postgres_admin_password_secret_name
+  value           = random_password.postgres_admin.result
+  key_vault_id    = azurerm_key_vault.shared.id
+  content_type    = "password"
+  expiration_date = timeadd(timestamp(), "8760h")
 }
 
 data "azurerm_client_config" "current" {}
