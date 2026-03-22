@@ -1,0 +1,34 @@
+name: PR DevSecOps Checks
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - 'infra/terraform/**'
+
+jobs:
+  terraform-and-security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive infra/terraform/
+
+      - name: Terraform Init & Validate
+        run: |
+          terraform init -backend=false
+          terraform validate
+        working-directory: infra/terraform/env/dev
+
+      - name: Run Checkov Security Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: infra/terraform/env/dev
+          framework: terraform
+          soft_fail: false # 취약점 발견 시 Actions 파이프라인 실패 처리 (Shift-left)

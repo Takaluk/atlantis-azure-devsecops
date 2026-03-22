@@ -26,7 +26,7 @@ resource "azurerm_network_security_group" "nsg" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
-  # 기본적으로 모든 인바운드 트래픽을 차단
+  # 모든 인바운드 트래픽 차단
   security_rule {
     name                       = "DenyAllInbound"
     priority                   = 4096

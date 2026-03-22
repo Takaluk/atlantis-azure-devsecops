@@ -1,0 +1,40 @@
+name: Prowler CSPM Azure Scan
+
+on:
+  push:
+    branches:
+      - main 
+  schedule:
+    - cron: '0 0 * * *' # 매일 자정에 정기 보안 스캔 실행
+
+jobs:
+  prowler-security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Prowler
+        run: pip install prowler
+
+      - name: Run Prowler Azure Scan
+        env:
+          # GitHub Secrets 등록
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          prowler azure --sp-env-auth -M csv html
+          
+      - name: Upload Prowler Report
+        uses: actions/upload-artifact@v3
+        if: always() # 에러에도 항상 보고서 저장
+        with:
+          name: prowler-report
+          path: output/
