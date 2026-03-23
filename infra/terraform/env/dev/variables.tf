@@ -28,6 +28,12 @@ variable "postgres_admin_password_secret_name" {
   default     = "postgres-admin-password"
 }
 
+variable "alphavantage_api_key_secret_name" {
+  description = "Alpha Vantage API 키 secret 이름"
+  type        = string
+  default     = "alphavantage-api-key"
+}
+
 variable "postgres_sku_name" {
   description = "PostgreSQL SKU"
   type        = string

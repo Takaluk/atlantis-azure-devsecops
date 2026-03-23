@@ -7,3 +7,8 @@ data "azurerm_key_vault_secret" "postgres_admin_password" {
   name         = var.postgres_admin_password_secret_name
   key_vault_id = data.azurerm_key_vault.shared.id
 }
+
+data "azurerm_key_vault_secret" "alphavantage_api_key" {
+  name         = var.alphavantage_api_key_secret_name
+  key_vault_id = data.azurerm_key_vault.shared.id
+}
