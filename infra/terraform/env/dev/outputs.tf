@@ -47,3 +47,23 @@ output "redis_ssl_port" {
   description = "Redis SSL 포트"
   value       = azurerm_redis_cache.auth.ssl_port
 }
+
+output "news_service_fqdn" {
+  description = "news-service 내부 FQDN"
+  value       = azurerm_container_app.news_service.ingress[0].fqdn
+}
+
+output "auth_service_fqdn" {
+  description = "auth-service 내부 FQDN"
+  value       = azurerm_container_app.auth_service.ingress[0].fqdn
+}
+
+output "stock_service_fqdn" {
+  description = "stock-service 내부 FQDN"
+  value       = azurerm_container_app.stock_service.ingress[0].fqdn
+}
+
+output "frontend_fqdn" {
+  description = "frontend 외부 FQDN"
+  value       = azurerm_container_app.frontend.ingress[0].fqdn
+}
