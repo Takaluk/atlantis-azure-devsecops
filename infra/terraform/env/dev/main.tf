@@ -1,4 +1,4 @@
-# 리소스 그룹
+# 리소스 그룹 
 resource "azurerm_resource_group" "rg" {
   name     = "rg-stocklens-msa"
   location = "koreacentral"

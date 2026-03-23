@@ -16,6 +16,9 @@ spring:
     redis:
       host: ${AUTH_REDIS_HOST:localhost}
       port: ${AUTH_REDIS_PORT:6379}
+      password: ${AUTH_REDIS_PASSWORD:}
+      ssl:
+        enabled: ${AUTH_REDIS_SSL_ENABLED:false}
 
 server:
   port: ${AUTH_SERVICE_PORT:8083}

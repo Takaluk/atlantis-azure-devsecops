@@ -1,4 +1,9 @@
 # atlantis-azure-devsecops
+- 로컬 Docker 기반 MSA 서비스를 Azure로 마이그레이션
+- Git Flow 기반으로 Checkov, Atlantis, Prowler 연계
+- 인프라 보안 검증과 배포 자동화 구현
+
+[Service Link](https://ca-frontend.whitemeadow-4d313429.koreacentral.azurecontainerapps.io/)
 
 ## Repository Structure
 
@@ -37,7 +42,7 @@ atlantis-azure-devsecops/
 docker compose -f docker/docker-compose.yml up -d --build
 ```
 
-## Azure Setup
+## Azure, Atlantis Setup
 
 ```bash
 ./scripts/setup.sh
