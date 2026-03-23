@@ -29,6 +29,7 @@ resource "azurerm_postgresql_flexible_server" "postgres" {
 }
 
 resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_azure_services" {
+  # checkov:skip=CKV2_AZURE_26: dev 환경에서 ACA -> PostgreSQL 연결을 위해 Azure 서비스 접근을 임시 허용, 추후 private endpoint 구성
   name             = "AllowAzureServices"
   server_id        = azurerm_postgresql_flexible_server.postgres.id
   start_ip_address = "0.0.0.0"
