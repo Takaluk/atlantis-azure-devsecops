@@ -3,6 +3,8 @@
 - Git Flow 기반으로 Checkov, Atlantis, Prowler 연계
 - 인프라 보안 검증과 배포 자동화 구현
 
+[Service Link](https://ca-frontend.whitemeadow-4d313429.koreacentral.azurecontainerapps.io/)
+
 ## Repository Structure
 
 ```
