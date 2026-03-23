@@ -1,4 +1,7 @@
 # atlantis-azure-devsecops
+- 로컬 Docker 기반 MSA 서비스를 Azure로 마이그레이션
+- Git Flow 기반으로 Checkov, Atlantis, Prowler 연계
+- 인프라 보안 검증과 배포 자동화 구현
 
 ## Repository Structure
 
@@ -37,15 +40,8 @@ atlantis-azure-devsecops/
 docker compose -f docker/docker-compose.yml up -d --build
 ```
 
-## Azure Setup
+## Azure, Atlantis Setup
 
 ```bash
 ./scripts/setup.sh
 ```
-
-## Azure Migration Status
-
-- PostgreSQL Flexible Server와 Redis는 `infra/terraform/env/dev` 기준으로 dev 환경에 배포되도록 정의되어 있습니다.
-- Container Apps는 `frontend`, `news-service`, `stock-service`, `auth-service`까지 배포되도록 구성되어 있습니다.
-- `frontend`만 외부 공개되고, 백엔드 서비스는 Container Apps 환경 내부 FQDN으로만 통신합니다.
-- `auth-service`는 Azure Redis 연결을 위해 TLS(`AUTH_REDIS_SSL_ENABLED=true`)와 access key를 사용합니다.
