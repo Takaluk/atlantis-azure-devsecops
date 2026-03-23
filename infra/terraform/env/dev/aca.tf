@@ -130,6 +130,11 @@ resource "azurerm_container_app" "news_service" {
     value = data.azurerm_key_vault_secret.postgres_admin_password.value
   }
 
+  secret {
+    name  = "alphavantage-api-key"
+    value = data.azurerm_key_vault_secret.alphavantage_api_key.value
+  }
+
   template {
     min_replicas = 1
     max_replicas = 1
@@ -297,6 +302,11 @@ resource "azurerm_container_app" "stock_service" {
     value = data.azurerm_key_vault_secret.postgres_admin_password.value
   }
 
+  secret {
+    name  = "alphavantage-api-key"
+    value = data.azurerm_key_vault_secret.alphavantage_api_key.value
+  }
+
   template {
     min_replicas = 1
     max_replicas = 1
@@ -335,6 +345,11 @@ resource "azurerm_container_app" "stock_service" {
       env {
         name  = "NEWS_SERVICE_URL"
         value = "https://${azurerm_container_app.news_service.ingress[0].fqdn}"
+      }
+
+      env {
+        name        = "ALPHAVANTAGE_API_KEY"
+        secret_name = "alphavantage-api-key"
       }
     }
   }
